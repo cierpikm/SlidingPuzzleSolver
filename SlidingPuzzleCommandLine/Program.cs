@@ -21,13 +21,16 @@ namespace SlidingPuzzleCommandLine
                     case "bfs":
                         {
                             string path = @"..\..\DataHandler\Data\";
-                            BFSSolver bfsSolver = new BFSSolver(path + args[2], path + args[3], path + args[4]);
+                            BFSSolver bfsSolver = new BFSSolver(args[1],path + args[2], path + args[3], path + args[4]);
                             bfsSolver.Solve();
                             break;
 
                         }
                     case "dfs":
                         {
+                            string path = @"..\..\DataHandler\Data\";
+                            DFSSolver dfsSolver = new DFSSolver(args[1], path + args[2], path + args[3], path + args[4]);
+                            dfsSolver.Solve();
                             break;
 
                         }

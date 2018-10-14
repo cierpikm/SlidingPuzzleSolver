@@ -90,7 +90,8 @@ if (!$PSBoundParameters.ContainsKey('strategy') -and $PSBoundParameters.Contains
 
 # Run a program solving the 15-puzzle using appropriate strategy/strategies
 if (!$PSBoundParameters.ContainsKey('strategy')) {
-    RunBfs DRLU
+    RunBfs 
+	RunDfs
 } else {
     switch ($strategy.ToLower()) {
         'bfs'  { RunBfs $param }

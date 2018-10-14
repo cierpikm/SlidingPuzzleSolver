@@ -18,17 +18,18 @@ namespace SlidingPuzzleEngine
         public int BlankSpaceIndex { get; set; }
         public List<DirectionEnum> Path { get; set; }
 
-        public State(byte dimensionX, byte dimensionY,  byte[] grid, DirectionEnum lastMove, int depthLevel, List<DirectionEnum> path)
+        public State(byte dimensionX, byte dimensionY, byte[] grid, DirectionEnum lastMove, int depthLevel, List<DirectionEnum> path)
         {
             DimensionX = dimensionX;
             DimensionY = dimensionY;
             Grid = grid;
-           // ParentState = parentState;
+            // ParentState = parentState;
             LastMove = lastMove;
             DepthLevel = depthLevel;
             FindBlankSpace();
             Path = path;
         }
+
         public bool IsSolved()
         {
             for (int i = 0; i < DimensionY; i++)
@@ -45,7 +46,7 @@ namespace SlidingPuzzleEngine
                         if (Grid[j + i * DimensionX] != j + i * DimensionX + 1)
                             return false;
                     }
-                    
+
                 }
             }
             return true;
@@ -60,7 +61,7 @@ namespace SlidingPuzzleEngine
             return (BlankSpaceIndex - x) / DimensionX;
         }
 
-        public List<DirectionEnum> GetAllowedMoves()
+        public List<DirectionEnum> GetAllowedMoves(List<DirectionEnum> order)
         {
             List<DirectionEnum> moves = new List<DirectionEnum>(4);
             int blankSpaceX = GetBlankSpaceX();
@@ -74,7 +75,18 @@ namespace SlidingPuzzleEngine
                 moves.Add(DirectionEnum.Left);
             if (blankSpaceX < DimensionX - 1 && LastMove != DirectionEnum.Left)
                 moves.Add(DirectionEnum.Right);
-            return moves;
+
+            List<DirectionEnum> orderedMoves = new List<DirectionEnum>();
+            for (int i = 0; i < order.Count; i++)
+            {
+                foreach (DirectionEnum directionEnum in moves)
+                {
+                    if (order[i] == directionEnum)
+                        orderedMoves.Add(directionEnum);
+                }
+            }
+
+            return orderedMoves;
 
         }
 
@@ -128,6 +140,23 @@ namespace SlidingPuzzleEngine
             return moves;
         }*/
 
+        public static List<DirectionEnum> StringToDirectionEnums(string order)
+        {
+            List<DirectionEnum> directions = new List<DirectionEnum>();
+            foreach (char c in order)
+            {
+                if (c == 'L')
+                    directions.Add(DirectionEnum.Left);
+                if (c == 'R')
+                    directions.Add(DirectionEnum.Right);
+                if (c == 'D')
+                    directions.Add(DirectionEnum.Down);
+                if (c == 'U')
+                    directions.Add(DirectionEnum.Up);
+            }
+
+            return directions;
+        }
         public static double GetTime(long startTime)
         {
             long endTime = 10000L * Stopwatch.GetTimestamp();
