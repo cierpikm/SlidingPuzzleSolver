@@ -16,6 +16,7 @@ namespace SlidingPuzzleEngine
         public Stack<State> States { get; set; }
         public byte DimensionX { get; set; }
         public byte DimensionY { get; set; }
+        public int MaxDepth { get; set; }
         public string InfoPath { get; set; }
         public string SolutionPath { get; set; }
         public List<DirectionEnum> Order { get; set; }
@@ -33,7 +34,7 @@ namespace SlidingPuzzleEngine
             States.Push(StartingState);
         }
 
-        public DFSSolver(string order, string startingStatePath, string infoPath, string solutionPath)
+        public DFSSolver(string order, string startingStatePath, string solutionPath, string infoPath)
         {
             InfoPath = infoPath;
             SolutionPath = solutionPath;
@@ -41,13 +42,14 @@ namespace SlidingPuzzleEngine
             DimensionX = data.DimensionX;
             DimensionY = data.DimensionY;
             Order = State.StringToDirectionEnums(order);
+            Order.Reverse();
             States = new Stack<State>();
             StartingState = new State(DimensionX, DimensionY, data.Grid, DirectionEnum.None, 0, new List<DirectionEnum>());
             CurrentState = StartingState;
             States.Push(StartingState);
         }
 
-        public void AppendQueueWithChildrens()
+        public void AppendQueueWithChildrens(ref int visied)
         {
             if (CurrentState.DepthLevel > 20)
                 return;
@@ -55,6 +57,8 @@ namespace SlidingPuzzleEngine
             List<DirectionEnum> allowedMoves = CurrentState.GetAllowedMoves(Order);
             for (int i = 0; i < allowedMoves.Count; i++)
             {
+                visied++;
+
                 State newPuzzle = new State(DimensionX, DimensionY, CurrentState.Move(allowedMoves[i]), allowedMoves[i], CurrentState.DepthLevel + 1, CurrentState.Path.Append(allowedMoves[i]).ToList());
                 States.Push(newPuzzle);
             }
@@ -62,12 +66,15 @@ namespace SlidingPuzzleEngine
 
         public void Solve()
         {
-            StartTime = 10000L * Stopwatch.GetTimestamp();
-            StartTime /= TimeSpan.TicksPerMillisecond;
-            StartTime *= 100L;
+            StartTime = DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000);
+            int processed = 0;
+            int visited = 1;
             while (States.Count > 0)
             {
+                
                 CurrentState = States.Pop();
+                MaxDepth = CurrentState.DepthLevel > MaxDepth ? CurrentState.DepthLevel : MaxDepth;
+                processed++;
                 if (CurrentState.IsSolved())
                 {
                     string path = null;
@@ -84,17 +91,17 @@ namespace SlidingPuzzleEngine
 
                     DataWriter.WriteInfoToFile(new InformationDataPack()
                     {
-                        DepthSize = CurrentState.DepthLevel,
+                        DepthSize = MaxDepth,
                         SizeOfSolvedPuzzle = CurrentState.Path.Count,
-                        StatesVisited = 0,
-                        StatesProcessed = 0,
-                        Time = State.GetTime(StartTime)
+                        StatesVisited = visited,
+                        StatesProcessed = processed,
+                        Time = (double)(DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000) - StartTime) / 1000
                     }, InfoPath);
                     Console.WriteLine("Done!");
                     return;
                 }
 
-                AppendQueueWithChildrens();
+                AppendQueueWithChildrens(ref visited);
             }
         }
     }
