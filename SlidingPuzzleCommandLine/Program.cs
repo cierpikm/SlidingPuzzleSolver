@@ -21,7 +21,7 @@ namespace SlidingPuzzleCommandLine
                     case "bfs":
                         {
                             string path = @"..\..\DataHandler\Data\";
-                            BFSSolver bfsSolver = new BFSSolver(args[1],path + args[2], path + args[3], path + args[4]);
+                            BruteForceSolver bfsSolver = new BruteForceSolver(SolverAlgorithmEnum.Bfs, args[1], path + args[2], path + args[3], path + args[4]);
                             bfsSolver.Solve();
                             break;
 
@@ -29,13 +29,16 @@ namespace SlidingPuzzleCommandLine
                     case "dfs":
                         {
                             string path = @"..\..\DataHandler\Data\";
-                            DFSSolver dfsSolver = new DFSSolver(args[1], path + args[2], path + args[3], path + args[4]);
+                            BruteForceSolver dfsSolver = new BruteForceSolver(SolverAlgorithmEnum.Dfs, args[1], path + args[2], path + args[3], path + args[4]);
                             dfsSolver.Solve();
                             break;
 
                         }
                     case "astr":
                         {
+                            string path = @"..\..\DataHandler\Data\";
+                            HeuristicSolver dfsSolver = new HeuristicSolver(State.StringToFunctionEnum(args[1]), path + args[2], path + args[3], path + args[4]);
+                            dfsSolver.Solve();
                             break;
 
                         }

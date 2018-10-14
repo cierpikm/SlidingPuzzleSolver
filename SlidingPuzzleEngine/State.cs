@@ -9,27 +9,67 @@ namespace SlidingPuzzleEngine
 {
     public class State
     {
+
+        #region Property
+
+        /// <summary>
+        /// Dimension x of puzzle grid
+        /// </summary>
         public byte DimensionX { get; set; }
+
+        /// <summary>
+        /// Dimension y of puzzle grid
+        /// </summary>
         public byte DimensionY { get; set; }
+
+        /// <summary>
+        /// Puzzle grid
+        /// </summary>
         public byte[] Grid { get; set; }
-        //public State ParentState { get; set; }
+
+        /// <summary>
+        /// The last made move
+        /// </summary>
         public DirectionEnum LastMove { get; private set; }
+
+        /// <summary>
+        /// Depth Level
+        /// </summary>
         public int DepthLevel { get; set; }
+
+        /// <summary>
+        /// Index of blank space
+        /// </summary>
         public int BlankSpaceIndex { get; set; }
+
+        /// <summary>
+        /// List with Path
+        /// </summary>
         public List<DirectionEnum> Path { get; set; }
+
+        #endregion
+
+        #region Constructor
 
         public State(byte dimensionX, byte dimensionY, byte[] grid, DirectionEnum lastMove, int depthLevel, List<DirectionEnum> path)
         {
             DimensionX = dimensionX;
             DimensionY = dimensionY;
             Grid = grid;
-            // ParentState = parentState;
             LastMove = lastMove;
             DepthLevel = depthLevel;
             FindBlankSpace();
             Path = path;
         }
 
+        #endregion
+
+        #region Method
+
+        /// <summary>
+        /// Checks if puzzle is solved
+        /// </summary>
+        /// <returns></returns>
         public bool IsSolved()
         {
             for (int i = 0; i < DimensionY; i++)
@@ -52,15 +92,30 @@ namespace SlidingPuzzleEngine
             return true;
         }
 
+        /// <summary>
+        /// Returns X of blank space
+        /// </summary>
+        /// <returns></returns>
         public int GetBlankSpaceX()
         {
             return BlankSpaceIndex % DimensionX;
         }
+
+        /// <summary>
+        /// Returns Y of blank space
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public int GetBlankSpaceY(int x)
         {
             return (BlankSpaceIndex - x) / DimensionX;
         }
 
+        /// <summary>
+        /// Returns allowed moves with given order
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
         public List<DirectionEnum> GetAllowedMoves(List<DirectionEnum> order)
         {
             List<DirectionEnum> moves = new List<DirectionEnum>(4);
@@ -90,6 +145,34 @@ namespace SlidingPuzzleEngine
 
         }
 
+        /// <summary>
+        /// Returns allowed moves
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public List<DirectionEnum> GetAllowedMoves()
+        {
+            List<DirectionEnum> moves = new List<DirectionEnum>(4);
+            int blankSpaceX = GetBlankSpaceX();
+            int blankSpaceY = GetBlankSpaceY(blankSpaceX);
+
+            if (blankSpaceY > 0 && LastMove != DirectionEnum.Down)
+                moves.Add(DirectionEnum.Up);
+            if (blankSpaceY < DimensionY - 1 && LastMove != DirectionEnum.Up)
+                moves.Add(DirectionEnum.Down);
+            if (blankSpaceX > 0 && LastMove != DirectionEnum.Right)
+                moves.Add(DirectionEnum.Left);
+            if (blankSpaceX < DimensionX - 1 && LastMove != DirectionEnum.Left)
+                moves.Add(DirectionEnum.Right);
+
+
+            return moves;
+
+        }
+
+        /// <summary>
+        /// Finds blank space in puzzle grid
+        /// </summary>
         public void FindBlankSpace()
         {
             for (int i = 0; i < Grid.Length; i++)
@@ -98,6 +181,12 @@ namespace SlidingPuzzleEngine
                     BlankSpaceIndex = i;
             }
         }
+
+        /// <summary>
+        /// Returns new puzzle grid with move to given direction
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
         public byte[] Move(DirectionEnum direction)
         {
             byte[] grid = (byte[])Grid.Clone();
@@ -122,24 +211,27 @@ namespace SlidingPuzzleEngine
             return grid;
         }
 
+        /// <summary>
+        /// Method that swaps values
+        /// </summary>
+        /// <param name="value1"></param>
+        /// <param name="value2"></param>
         public void Swap(ref byte value1, ref byte value2)
         {
             byte temp = value1;
             value1 = value2;
             value2 = temp;
         }
-        /*public string GetAllMoves()
-        {
-            string moves = null;
-            if (ParentState != null)
-                moves += ParentState.GetAllMoves();
-            else
-                return null;
 
-            moves += LastMove.ToString()[0];
-            return moves;
-        }*/
+        #endregion
 
+        #region Static Method
+
+        /// <summary>
+        /// Convert String to List of direction enums
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
         public static List<DirectionEnum> StringToDirectionEnums(string order)
         {
             List<DirectionEnum> directions = new List<DirectionEnum>();
@@ -157,14 +249,17 @@ namespace SlidingPuzzleEngine
 
             return directions;
         }
-        public static double GetTime(long startTime)
+
+        public static HeuristicFunctionEnum StringToFunctionEnum(string function)
         {
-            long endTime = 10000L * Stopwatch.GetTimestamp();
-            endTime /= TimeSpan.TicksPerMillisecond;
-            endTime *= 100L;
-            return (double)(endTime - startTime) / 1000000;
+            if (function == "hamm")
+                return HeuristicFunctionEnum.Hamming;
+
+            return HeuristicFunctionEnum.Manhattan;
+
         }
 
+        #endregion
 
     }
 }
