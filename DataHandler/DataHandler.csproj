@@ -47,7 +47,9 @@
     <Compile Include="StateDataPack.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Extractor.ps1" />
     <None Include="Data\SolveAllScript.ps1" />
+    <None Include="Data\Validator.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

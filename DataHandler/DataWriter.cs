@@ -19,7 +19,7 @@ namespace DataHandler
                     for (int i = 0; i < info.SizeOfSolvedPuzzle; i++)
                     {
                         outputFile.Write(info.Solution[i]);
-                        outputFile.Write(' ');
+                        //outputFile.Write(' ');
                     }
                 }
                 
