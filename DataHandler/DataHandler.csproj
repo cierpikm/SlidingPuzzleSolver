@@ -46,5 +46,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StateDataPack.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SolveAllScript.ps1" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

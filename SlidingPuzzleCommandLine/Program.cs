@@ -20,7 +20,7 @@ namespace SlidingPuzzleCommandLine
                 {
                     case "bfs":
                         {
-                            string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)+"\\";
+                            string path = @"..\..\DataHandler\Data\";
                             BFSSolver bfsSolver = new BFSSolver(path + args[2], path + args[3], path + args[4]);
                             bfsSolver.Solve();
                             break;
