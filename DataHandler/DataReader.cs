@@ -12,20 +12,27 @@ namespace DataHandler
 
         public static StateDataPack LoadStartingState(string path)
         {
+            Console.WriteLine(path);
             using (StreamReader sr = new StreamReader(path))
             {
 
-                // Read the stream to a string, and write the string to the console.
-                String[] line = sr.ReadLine()?.Split(' ','\r','\n');
+                String[] line = sr.ReadLine()?.Split(' ', '\r', '\n');
                 byte x = byte.Parse(line[0]);
+
                 byte y = byte.Parse(line[1]);
-                String[] gridString = sr.ReadLine()?.Split(' ');
+
+                List<string> gridString = new List<string>();
+                for (int i = 0; i < y; i++)
+                {
+                    gridString.AddRange(sr.ReadLine()?.Split(' ','\r','\n'));
+                }
+
                 byte[] grid = new Byte[x * y];
                 for (int i = 0; i < y; i++)
                 {
                     for (int j = 0; j < x; j++)
                     {
-                        grid[j + i * x] = byte.Parse(gridString[j + i * x ]);
+                        grid[j + i * x] = byte.Parse(gridString[j + i * x]);
                     }
                 }
                 return new StateDataPack() { DimensionX = x, DimensionY = y, Grid = grid };
