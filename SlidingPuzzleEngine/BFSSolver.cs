@@ -1,61 +1,97 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataHandler;
 
 namespace SlidingPuzzleEngine
 {
     public class BFSSolver
     {
-        public PuzzleCore StartingState { get; set; }
-        public PuzzleCore CurrentState { get; set; }
-        public Queue<PuzzleCore> States { get; set; }
+        public long StartTime { get; set; }
+        public State StartingState { get; set; }
+        public State CurrentState { get; set; }
+        public Queue<State> States { get; set; }
+        public byte DimensionX { get; set; }
+        public byte DimensionY { get; set; }
+        public string InfoPath { get; set; }
+        public string SolutionPath { get; set; }
 
-        public BFSSolver(PuzzleCore startingState)
+        public BFSSolver(State startingState)
         {
-            States=new Queue<PuzzleCore>();
+            InfoPath = @"\..\..\test.txt";
+            SolutionPath = @"\..\..\test1.txt";
+            DimensionX = startingState.DimensionX;
+            DimensionY = startingState.DimensionY;
+
+            States = new Queue<State>();
             StartingState = startingState;
             CurrentState = startingState;
             States.Enqueue(StartingState);
         }
 
+        public BFSSolver(string startingStatePath, string infoPath, string solutionPath)
+        {
+            InfoPath = infoPath;
+            SolutionPath = solutionPath;
+            StateDataPack data = DataReader.LoadStartingState(startingStatePath);
+            DimensionX = data.DimensionX;
+            DimensionY = data.DimensionY;
+
+            States = new Queue<State>();
+            StartingState = new State(DimensionX, DimensionY, data.Grid, DirectionEnum.None, 0, new List<DirectionEnum>());
+            CurrentState = StartingState;
+            States.Enqueue(StartingState);
+        }
+
         public void AppendQueueWithChildrens()
         {
-            List<int> allowedMoves = CurrentState.GetAllowedMoves();
+            List<DirectionEnum> allowedMoves = CurrentState.GetAllowedMoves();
             for (int i = 0; i < allowedMoves.Count; i++)
             {
-                int move = allowedMoves[i];
-                if (move != CurrentState.LastMove)
-                {
-                    PuzzleCore newPuzzle = new PuzzleCore(CurrentState.Dimension,new List<byte>(CurrentState.PuzzleGrid)){Path = new List<Direction>(CurrentState.Path)};
-                    Direction direction = newPuzzle.Move(move);
-                    newPuzzle.Path.Add(direction);
-                    States.Enqueue(newPuzzle);
-                }
+                State newPuzzle = new State(DimensionX, DimensionY, CurrentState.Move(allowedMoves[i]), allowedMoves[i], CurrentState.DepthLevel + 1, CurrentState.Path.Append(allowedMoves[i]).ToList());
+                States.Enqueue(newPuzzle);
             }
         }
 
-        public List<Direction> Solve()
+        public void Solve()
         {
+            StartTime = 10000L * Stopwatch.GetTimestamp();
+            StartTime /= TimeSpan.TicksPerMillisecond;
+            StartTime *= 100L;
             while (States.Count > 0)
             {
                 CurrentState = States.Dequeue();
-                if (CurrentState.Check())
+                if (CurrentState.IsSolved())
                 {
-                    Console.WriteLine("Done");
-                    foreach (Direction direction in CurrentState.Path)
+                    string path = null;
+                    foreach (DirectionEnum directionEnum in CurrentState.Path)
                     {
-                        Console.WriteLine(direction.ToString());
+                        path += directionEnum.ToString()[0];
                     }
 
-                    return CurrentState.Path; 
+                    DataWriter.WriteSolutionToFile(new InformationDataPack()
+                    {
+                        SizeOfSolvedPuzzle = CurrentState.Path.Count,
+                        Solution = path,
+                    }, SolutionPath);
+
+                    DataWriter.WriteInfoToFile(new InformationDataPack()
+                    {
+                        DepthSize = CurrentState.DepthLevel,
+                        SizeOfSolvedPuzzle = CurrentState.Path.Count,
+                        StatesVisited = 0,
+                        StatesProcessed = 0,
+                        Time = State.GetTime(StartTime)
+                    }, InfoPath);
+                    Console.WriteLine("Done!");
+                    return;
                 }
 
                 AppendQueueWithChildrens();
             }
-
-            return null;
         }
     }
 }

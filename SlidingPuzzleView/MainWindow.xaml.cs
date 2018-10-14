@@ -23,17 +23,17 @@ namespace SlidingPuzzleView
     /// </summary>
     public partial class MainWindow : INotifyPropertyChanged
     {
-        private ObservableCollection<byte> StartingPosition { get; set; }= new ObservableCollection<byte>
+        private ObservableCollection<byte> StartingPosition { get; set; } = new ObservableCollection<byte>
         {
             1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15
-        };  
+        };
         public PuzzleGridViewModel PuzzleGridVM { get; set; } = new PuzzleGridViewModel(new ObservableCollection<byte>
         {
             1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15
-        });  
+        });
         public MainWindow()
         {
-            
+
             DataContext = this;
             InitializeComponent();
         }
@@ -52,13 +52,7 @@ namespace SlidingPuzzleView
 
         private void Solve_BFS_OnClick(object sender, RoutedEventArgs e)
         {
-            string text=null;
-            foreach (SlidingPuzzleEngine.Direction direction in PuzzleGridVM.SolveBFS())
-            {
-                text += direction.ToString()+Environment.NewLine;
-            }
-           ;
-            TextBlock.Text = text;
+            PuzzleGridVM.SolveBFS();
 
         }
     }

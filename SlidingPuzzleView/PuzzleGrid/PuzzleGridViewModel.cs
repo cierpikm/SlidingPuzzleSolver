@@ -28,7 +28,7 @@ namespace SlidingPuzzleView
 
         public ICommand MoveCommand { get; set; }
         private ObservableCollection<byte> _itemsTable;
-        public PuzzleCore StartingState { get; set; }
+        public State StartingState { get; set; }
         public BFSSolver BfsSolver { get; set; }
         public ObservableCollection<byte> ItemsTable
         {
@@ -44,26 +44,36 @@ namespace SlidingPuzzleView
         {
             ItemsTable = itemsList;
             MoveCommand = new RelayCommand(Move);
-            StartingState=new PuzzleCore(4,itemsList.ToList());
-            
+            StartingState = new State(4, 4, itemsList.ToArray(), DirectionEnum.None, 0, new List<DirectionEnum>());
+
         }
         public void Move(int index)
         {
-            SlidingPuzzleEngine.Direction move = StartingState.GetMove(index);
-            if (move != SlidingPuzzleEngine.Direction.None)
+
+            var list = StartingState.GetAllowedMoves();
+            foreach (DirectionEnum directionEnum in list)
             {
-                StartingState.Swap(index, StartingState.PointToIndex(StartingState.BlankSpace));
-                StartingState.BlankSpace = StartingState.FindBlankSpace();
-                ItemsTable=new ObservableCollection<byte>(StartingState.PuzzleGrid);
+                if (directionEnum == DirectionEnum.Left && StartingState.BlankSpaceIndex == index + 1)
+                    StartingState.Grid = StartingState.Move(DirectionEnum.Left);
+                if (directionEnum == DirectionEnum.Right && StartingState.BlankSpaceIndex == index - 1)
+                    StartingState.Grid = StartingState.Move(DirectionEnum.Right);
+                if (directionEnum == DirectionEnum.Up && StartingState.BlankSpaceIndex == index + 4)
+                    StartingState.Grid = StartingState.Move(DirectionEnum.Up);
+                if (directionEnum == DirectionEnum.Down && StartingState.BlankSpaceIndex == index - 4)
+                    StartingState.Grid = StartingState.Move(DirectionEnum.Down);
 
             }
+            StartingState.FindBlankSpace();
+            ItemsTable = new ObservableCollection<byte>(StartingState.Grid);
+
+
         }
 
 
-        public List<SlidingPuzzleEngine.Direction> SolveBFS()
+        public void SolveBFS()
         {
             BfsSolver = new BFSSolver(StartingState);
-            return BfsSolver.Solve();
+            BfsSolver.Solve();
         }
     }
 }
