@@ -118,19 +118,7 @@ namespace SlidingPuzzleEngine
         /// <returns></returns>
         public List<DirectionEnum> GetAllowedMoves(List<DirectionEnum> order)
         {
-            List<DirectionEnum> moves = new List<DirectionEnum>(4);
-            int blankSpaceX = GetBlankSpaceX();
-            int blankSpaceY = GetBlankSpaceY(blankSpaceX);
-
-            if (blankSpaceY > 0 && LastMove != DirectionEnum.Down)
-                moves.Add(DirectionEnum.Up);
-            if (blankSpaceY < DimensionY - 1 && LastMove != DirectionEnum.Up)
-                moves.Add(DirectionEnum.Down);
-            if (blankSpaceX > 0 && LastMove != DirectionEnum.Right)
-                moves.Add(DirectionEnum.Left);
-            if (blankSpaceX < DimensionX - 1 && LastMove != DirectionEnum.Left)
-                moves.Add(DirectionEnum.Right);
-
+            List<DirectionEnum> moves = GetAllowedMoves();
             List<DirectionEnum> orderedMoves = new List<DirectionEnum>();
             for (int i = 0; i < order.Count; i++)
             {

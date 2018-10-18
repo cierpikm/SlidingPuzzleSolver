@@ -16,11 +16,7 @@ namespace DataHandler
                 outputFile.WriteLine(info.SizeOfSolvedPuzzle);
                 if (info.SizeOfSolvedPuzzle >= 0)
                 {
-                    for (int i = 0; i < info.SizeOfSolvedPuzzle; i++)
-                    {
-                        outputFile.Write(info.Solution[i]);
-                        //outputFile.Write(' ');
-                    }
+                        outputFile.Write(info.Solution);
                 }
                 
             }
@@ -34,7 +30,7 @@ namespace DataHandler
                 outputFile.WriteLine(info.StatesVisited);
                 outputFile.WriteLine(info.StatesProcessed);
                 outputFile.WriteLine(info.DepthSize);
-                outputFile.WriteLine(info.Time);
+                outputFile.WriteLine($"{info.Time:N3}");
             }
         }
     }

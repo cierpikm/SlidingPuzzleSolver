@@ -117,7 +117,7 @@ namespace SlidingPuzzleEngine
         /// </summary>
         public void Solve()
         {
-            StartTime = (DateTime.Now.Ticks % TimeSpan.TicksPerSecond) / 100000.0;
+            StartTime =((double)DateTime.Now.Ticks / TimeSpan.TicksPerSecond) * 1000;
             //States visited
             int visited = 0;
 
@@ -150,7 +150,7 @@ namespace SlidingPuzzleEngine
                         SizeOfSolvedPuzzle = CurrentState.Path.Count,
                         StatesVisited = visited,
                         StatesProcessed = visited + StatesCount(),
-                        Time = (DateTime.Now.Ticks % TimeSpan.TicksPerSecond / 100000.0 - StartTime)
+                        Time = (double)DateTime.Now.Ticks / TimeSpan.TicksPerSecond * 1000 - StartTime
                     }, InfoPath);
 
                     Console.WriteLine("Done!");
