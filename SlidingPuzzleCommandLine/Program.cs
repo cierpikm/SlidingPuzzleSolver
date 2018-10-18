@@ -12,37 +12,43 @@ namespace SlidingPuzzleCommandLine
     {
         static void Main(string[] args)
         {
+            string path = @"..\..\DataHandler\Data\";
             if (args.Length < 5)
                 Console.WriteLine("Too few arguments");
             else
             {
+                PuzzleSolver solver;
                 switch (args[0])
                 {
                     case "bfs":
                         {
-                            string path = @"..\..\DataHandler\Data\";
-                            BruteForceSolver bfsSolver = new BruteForceSolver(SolverAlgorithmEnum.Bfs, args[1], path + args[2], path + args[3], path + args[4]);
-                            bfsSolver.Solve();
+                            solver = new BFSSolver(args[1], path + args[2], path + args[3], path + args[4]);
                             break;
 
                         }
                     case "dfs":
                         {
-                            string path = @"..\..\DataHandler\Data\";
-                            BruteForceSolver dfsSolver = new BruteForceSolver(SolverAlgorithmEnum.Dfs, args[1], path + args[2], path + args[3], path + args[4]);
-                            dfsSolver.Solve();
+                            solver = new DFSSolver(args[1], path + args[2], path + args[3], path + args[4]);
                             break;
 
                         }
                     case "astr":
                         {
-                            string path = @"..\..\DataHandler\Data\";
-                            HeuristicSolver dfsSolver = new HeuristicSolver(State.StringToFunctionEnum(args[1]), path + args[2], path + args[3], path + args[4]);
-                            dfsSolver.Solve();
+                            if (args[1] == "hamm")
+                                solver = new HammingSolver(path + args[2], path + args[3], path + args[4]);
+                            else
+                                solver = new ManhattanSolver(path + args[2], path + args[3], path + args[4]);
                             break;
 
                         }
+                    default:
+                        {
+                            solver = new BFSSolver(args[1], path + args[2], path + args[3], path + args[4]);
+                            break;
+                        }
+
                 }
+                solver.Solve();
             }
 
         }

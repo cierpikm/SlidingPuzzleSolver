@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,14 +7,14 @@ using DataHandler;
 
 namespace SlidingPuzzleEngine
 {
-    public class BruteForceSolver
+    public abstract class PuzzleSolver
     {
         #region Property
 
         /// <summary>
         /// The time that solve algorithm starts
         /// </summary>
-        public long StartTime { get; set; }
+        public double StartTime { get; set; }
 
         /// <summary>
         /// Starting state loaded from file
@@ -26,16 +25,6 @@ namespace SlidingPuzzleEngine
         /// State that is currently processing
         /// </summary>
         public State CurrentState { get; set; }
-
-        /// <summary>
-        /// Queue for bfs states
-        /// </summary>
-        public Queue<State> StatesBfs { get; set; }
-
-        /// <summary>
-        /// Stack for dfs states
-        /// </summary>
-        public Stack<State> StatesDfs { get; set; }
 
         /// <summary>
         /// Dimension X loaded from file
@@ -62,15 +51,6 @@ namespace SlidingPuzzleEngine
         /// </summary>
         public string SolutionPath { get; set; }
 
-        /// <summary>
-        /// Order for searching the neighborhood
-        /// </summary>
-        public List<DirectionEnum> Order { get; set; }
-
-        /// <summary>
-        /// Selected algorithm (bfs or dfs)
-        /// </summary>
-        public SolverAlgorithmEnum Algorithm { get; set; }
 
         #endregion
 
@@ -80,51 +60,34 @@ namespace SlidingPuzzleEngine
         /// Constructor for View?? 
         /// </summary>
         /// <param name="startingState"></param>
-        public BruteForceSolver(State startingState)
+        protected PuzzleSolver(State startingState)
         {
             InfoPath = @"\..\..\test.txt";
             SolutionPath = @"\..\..\test1.txt";
             DimensionX = startingState.DimensionX;
             DimensionY = startingState.DimensionY;
 
-            StatesDfs = new Stack<State>();
-            StatesBfs = new Queue<State>();
             StartingState = startingState;
             CurrentState = startingState;
-            StatesDfs.Push(StartingState);
-            StatesBfs.Enqueue(StartingState);
+
         }
 
         /// <summary>
-        /// Constructor for Command Line with paths and order params 
+        /// Constructor for Command Line with paths and function params 
         /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="order"></param>
+        /// <param name="function"></param>
         /// <param name="startingStatePath"></param>
         /// <param name="solutionPath"></param>
         /// <param name="infoPath"></param>
-        public BruteForceSolver(SolverAlgorithmEnum algorithm, string order, string startingStatePath, string solutionPath, string infoPath)
+        protected PuzzleSolver(string startingStatePath, string solutionPath, string infoPath)
         {
-            Algorithm = algorithm;
-            Order = State.StringToDirectionEnums(order);
             StateDataPack data = DataReader.LoadStartingState(startingStatePath);
             SolutionPath = solutionPath;
             InfoPath = infoPath;
-            
             DimensionX = data.DimensionX;
             DimensionY = data.DimensionY;
             StartingState = new State(DimensionX, DimensionY, data.Grid, DirectionEnum.None, 0, new List<DirectionEnum>());
             CurrentState = StartingState;
-            
-            //if algorithm is dfs, reverse order
-            if (Algorithm == SolverAlgorithmEnum.Dfs)
-                Order.Reverse();
-
-            StatesDfs = new Stack<State>();
-            StatesBfs = new Queue<State>();
-            
-            StatesDfs.Push(StartingState);
-            StatesBfs.Enqueue(StartingState);
         }
 
         #endregion
@@ -132,53 +95,39 @@ namespace SlidingPuzzleEngine
         #region Method
 
         /// <summary>
-        /// Method that appends queue or stack with new states from allowed moves for current state.
+        /// Method that appends priority queue with new states from allowed moves for current state.
         /// </summary>
-        /// <param name="visited"></param>
-        public void AppendWithChildren(ref int visited)
+        private void AppendWithChildren()
         {
-            //if algorithm is dfs, depth level cannot be over 20
-            if (CurrentState.DepthLevel >= 20 && Algorithm == SolverAlgorithmEnum.Dfs)
+            if (!CanMove())
                 return;
 
-            List<DirectionEnum> allowedMoves = CurrentState.GetAllowedMoves(Order);
-            for (int i = 0; i < allowedMoves.Count; i++)
+            List<DirectionEnum> allowedMoves = GetAllMoves();
+            foreach (var move in allowedMoves)
             {
-                visited++;
-
-                State newPuzzle = new State(DimensionX, DimensionY, CurrentState.Move(allowedMoves[i]), allowedMoves[i], CurrentState.DepthLevel + 1, CurrentState.Path.Append(allowedMoves[i]).ToList());
-               
-                //if algorithm is dfs, Add state to the Stack, else Add state to the queue
-                if (Algorithm == SolverAlgorithmEnum.Dfs)
-                    StatesDfs.Push(newPuzzle);
-                else
-                    StatesBfs.Enqueue(newPuzzle);
+                State newPuzzle = new State(DimensionX, DimensionY, CurrentState.Move(move), move, CurrentState.DepthLevel + 1, CurrentState.Path.Append(move).ToList());
+                AddToStates(newPuzzle);
             }
         }
 
+
+
         /// <summary>
-        /// Solve puzzle with selected algorithm
+        /// Solve puzzle with selected function
         /// </summary>
         public void Solve()
         {
-            StartTime = DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000);
-
-            //States processed
-            int processed = 0;
-           
+            StartTime = (DateTime.Now.Ticks % TimeSpan.TicksPerSecond) / 100000.0;
             //States visited
-            int visited = 1;
+            int visited = 0;
 
-            while ((StatesDfs.Count > 0 && Algorithm == SolverAlgorithmEnum.Dfs) || (StatesBfs.Count > 0 && Algorithm == SolverAlgorithmEnum.Bfs))
+            while (StatesCount() > 0)
             {
-                //if algorithm is dfs, remove last state from the Stack, else remove first state from the queue
-                if (Algorithm == SolverAlgorithmEnum.Dfs)
-                    CurrentState = StatesDfs.Pop();
-                else
-                    CurrentState = StatesBfs.Dequeue();
+
+                CurrentState = GetFromStates();
 
                 MaxDepth = CurrentState.DepthLevel > MaxDepth ? CurrentState.DepthLevel : MaxDepth;
-                processed++;
+                visited++;
 
                 //Check if state is solved, if its solved Write info to the file
                 if (CurrentState.IsSolved())
@@ -200,18 +149,30 @@ namespace SlidingPuzzleEngine
                         DepthSize = MaxDepth,
                         SizeOfSolvedPuzzle = CurrentState.Path.Count,
                         StatesVisited = visited,
-                        StatesProcessed = processed,
-                        Time = (double)(DateTime.Now.Ticks / (TimeSpan.TicksPerMillisecond / 1000) - StartTime) / 1000
+                        StatesProcessed = visited + StatesCount(),
+                        Time = (DateTime.Now.Ticks % TimeSpan.TicksPerSecond / 100000.0 - StartTime)
                     }, InfoPath);
+
                     Console.WriteLine("Done!");
                     return;
                 }
-          
-                AppendWithChildren(ref visited);
+
+                AppendWithChildren();
             }
         }
 
+
         #endregion
 
+        #region Abstract Methods
+
+        protected abstract bool CanMove();
+        protected abstract List<DirectionEnum> GetAllMoves();
+        protected abstract void AddToStates(State newPuzzle);
+        protected abstract State GetFromStates();
+        protected abstract int StatesCount();
+
+        #endregion
     }
+
 }

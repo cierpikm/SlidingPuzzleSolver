@@ -250,15 +250,6 @@ namespace SlidingPuzzleEngine
             return directions;
         }
 
-        public static HeuristicFunctionEnum StringToFunctionEnum(string function)
-        {
-            if (function == "hamm")
-                return HeuristicFunctionEnum.Hamming;
-
-            return HeuristicFunctionEnum.Manhattan;
-
-        }
-
         #endregion
 
     }
